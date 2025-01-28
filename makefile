@@ -1,13 +1,25 @@
 CFLAGS = -std=c++17 -Og
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+TARGET = SimpleVulkanRenderer
+SOURCES := $(wildcard src/*.cpp)
+OBJECTS := $(SOURCES:.cpp=.o)
 
-VulkanTest: main.cpp
-	g++ $(CFLAGS) -o build/VulkanTest main.cpp $(LDFLAGS)
+all: shaders $(TARGET)
 
-.PHONY: test clean
+.PHONY: shaders test clean
 
-test: VulkanTest
-	./VulkanTest
+shaders:
+	cd shaders && ./compile.sh
+
+$(TARGET): $(OBJECTS)
+	g++ $(CFLAGS) $(OBJECTS) -o build/$(TARGET) $(LDFLAGS)
+
+%.o: %.cpp
+	g++ $(CFLAGS) -c $< -o build/$@
+
+
+test: SimpleVulkanRenderer
+	./build/SimpleVulkanRenderer
 
 clean:
-	rm -f build/
+	rm -f build/*

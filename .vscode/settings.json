@@ -64,5 +64,11 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "__nullptr": "cpp"
-  }
+  },
+  "C_Cpp.default.configurationProvider": "",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/include/vulkan"
+    ],
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json"
 }

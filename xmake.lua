@@ -10,10 +10,17 @@ target("SimpleVulkanRenderer")
     add_files("src/*.cpp")
     add_includedirs("include")
     add_syslinks("glfw", "vulkan", "dl", "pthread", "X11", "Xxf86vm", "Xrandr", "Xi")
+    if is_mode("debug") then
+        add_cxxflags("-Og", "-g", "-ggdb",  "-Wall", "-Wextra", {force = true})
+    elseif is_mode("release") then
+        add_cxxflags("-O3")
+    end
 
 task("shaders")
     on_run(function()
-        os.exec("cd shaders && ./compile.sh")
+        os.mkdir("shaders")
+        os.exec("/usr/local/bin/glslc shaders/simple_shader.vert -o build/vert.spv")
+        os.exec("/usr/local/bin/glslc shaders/simple_shader.frag -o build/frag.spv")
     end)
     set_menu {
         usage = "xmake shaders",

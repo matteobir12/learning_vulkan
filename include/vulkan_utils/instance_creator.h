@@ -26,9 +26,9 @@ class VulkanInstanceWrapper {
 
   static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
       VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-      VkDebugUtilsMessageTypeFlagsEXT messageType,
+      VkDebugUtilsMessageTypeFlagsEXT /*  messageType */,
       const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-      void* pUserData)
+      void* /* pUserData */)
   {
     if (messageSeverity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
       std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;

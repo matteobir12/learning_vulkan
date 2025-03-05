@@ -5,22 +5,30 @@
 #include <vector>
 #include <stdexcept>
 
+#include "vulkan_utils/device_manager.h"
+
 namespace VulkanUtils {
 
 struct FrameSyncObjects {
   VkSemaphore imageAvailable;
   VkSemaphore renderFinished;
   VkFence inFlight;
+  // not a sync object, but needs to be synced and one per frame.
+  // maybe should live somewhere else
+  VkCommandBuffer commandBuffer; 
 };
 
 class SyncObjectsManager {
 public:
-    SyncObjectsManager(const VkDevice _device, const int _maxFramesInFlight)
-      : device(_device), maxFramesInFlight(_maxFramesInFlight) 
+    SyncObjectsManager(VulkanUtils::DeviceManager& deviceManager, const int _maxFramesInFlight)
+      : device(deviceManager.getDevice()), maxFramesInFlight(_maxFramesInFlight) 
     {
+      auto commandBuffs = deviceManager.getCommandPoolWrapper().allocateCommandBuffers(maxFramesInFlight);
       syncObjects.resize(maxFramesInFlight);
-      for (int i = 0; i < maxFramesInFlight; ++i)
+      for (int i = 0; i < maxFramesInFlight; ++i) {
         createSyncObjects(syncObjects[i]);
+        syncObjects[i].commandBuffer = commandBuffs[i];
+      }
     }
 
     ~SyncObjectsManager() {

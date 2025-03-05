@@ -63,7 +63,15 @@
     "thread": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "__nullptr": "cpp"
+    "__nullptr": "cpp",
+    "__node_handle": "cpp",
+    "__config": "cpp",
+    "__locale": "cpp",
+    "queue": "cpp",
+    "stack": "cpp",
+    "ios": "cpp",
+    "locale": "cpp",
+    "__functional_base": "cpp"
   },
   "C_Cpp.default.configurationProvider": "",
     "C_Cpp.default.includePath": [

@@ -1,10 +1,33 @@
 #version 450
-layout(location = 0) out vec4 fragColor;
-void main() {
-    // Hard-coded triangle in clip space
-    float x[3] = float[](0.0, 0.5, -0.5);
-    float y[3] = float[](0.5, -0.5, -0.5);
 
-    gl_Position = vec4(x[gl_VertexIndex], y[gl_VertexIndex], 0.0, 1.0);
-    fragColor   = vec4(1.0, 0.0, 0.0, 1.0); // red
+layout (location = 0) in vec3 aPosition;
+layout (location = 1) in vec3 vertexNorm;
+layout (location = 2) in vec2 aTextCoord;
+
+layout(push_constant) uniform MyPushConstants {
+    mat4 uModel;
+    int uUseTexture;
+    vec4 u_color;
+} pushConst;
+
+layout(set = 0, binding = 0) uniform SceneBlock {
+    mat4 uViewProjection;
+    mat4 uWorld;
+    mat4 uWorldInverseTranspose;
+    vec3 uViewerWorldPosition;
+} scene;
+
+layout(location = 0) out vec3 vNormal;
+layout(location = 1) out vec3 surfaceWorldPosition;
+layout(location = 2) out vec3 vSurfaceToViewer;
+layout(location = 3) out vec2 vTextCoord;
+
+void main() {
+  vTextCoord = aTextCoord;
+  gl_Position = scene.uViewProjection * pushConst.uModel * vec4(aPosition, 1.0);
+
+  vNormal = mat3(scene.uWorldInverseTranspose) * vertexNorm;
+
+  surfaceWorldPosition = mat3(scene.uWorld) * aPosition;
+  vSurfaceToViewer = scene.uViewerWorldPosition - surfaceWorldPosition;
 }

@@ -32,6 +32,8 @@ class SwapChainHandler {
 
   const VkExtent2D& getExtent() const { return swapchainExtent; }
 
+  uint32_t getImageCount() const { return scImageCount; }
+
   SwapChainHandler(const SwapChainHandler&) = delete;
  private:
   void createSwapChain(const VkPhysicalDevice physicalDevice, const WindowAndSurfaceManager& window);
@@ -50,6 +52,7 @@ class SwapChainHandler {
   const VkDevice device;
 
   std::vector<VkFramebuffer> swapchainFramebuffers;
+  uint32_t scImageCount = 0;
 };
 
 }

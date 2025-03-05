@@ -5,6 +5,9 @@
 #include <optional>
 #include <vector>
 
+#include "vulkan_utils/command_pool_wrapper.h"
+#include "vulkan_utils/scoped_command_buffer.h"
+
 namespace VulkanUtils {
 class DeviceManager {
  public:
@@ -21,8 +24,95 @@ class DeviceManager {
   VkDevice getDevice() const { return device; }
   VkQueue getGraphicsQueue() const { return graphicsQueue; }
   VkQueue getPresentQueue() const { return presentQueue; }
+  CommandPoolWrapper& getCommandPoolWrapper() { return *commandPoolWrapper; };
 
   VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
+
+  ScopedCommandBuffer createScopedCommandBuffer() {
+    return ScopedCommandBuffer(device, transientPool->getCommandPool(), getGraphicsQueue());
+  }
+
+  // Buffer would need to be destroyed after... maybe investigate custom allocators?
+  VkResult createBuffer(
+      VkDeviceSize size,
+      VkBufferUsageFlags usage,
+      VkMemoryPropertyFlags properties,
+      VkBuffer& buffer,
+      VkDeviceMemory& bufferMemory);
+
+  VkResult createVertexBuffer(
+      VkDeviceSize size,
+      VkBuffer& buffer,
+      VkDeviceMemory& bufferMemory) {
+    return createBuffer(
+        size,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        buffer,
+        bufferMemory);
+  }
+
+  VkResult createIndexBuffer(
+      VkDeviceSize size,
+      VkBuffer& buffer,
+      VkDeviceMemory& bufferMemory) {
+    return createBuffer(
+        size,
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        buffer,
+        bufferMemory);
+  }
+
+  VkResult createUniformBuffer(
+      VkDeviceSize size,
+      VkBuffer& buffer,
+      VkDeviceMemory& bufferMemory) {
+    return createBuffer(
+        size,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        buffer,
+        bufferMemory);
+  }
+
+  VkResult createStagingBuffer(
+      VkDeviceSize size,
+      VkBuffer& buffer,
+      VkDeviceMemory& bufferMemory) {
+    return createBuffer(size, 
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+        buffer, 
+        bufferMemory);
+  }
+
+  // finalLayout should probably be VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+  // currently no form of texture streaming supported.. once on the gpu it doesn't
+  // come off
+  VkResult createImage(
+      uint32_t width,
+      uint32_t height,
+      VkFormat format,  
+      VkImageTiling tiling,
+      VkImageUsageFlags usage,
+      VkMemoryPropertyFlags properties,
+      VkImage& image,
+      VkDeviceMemory& imageMemory,
+      VkImageLayout finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+  VkResult createImageView(
+      VkImage image, 
+      VkFormat format, 
+      VkImageAspectFlags aspectFlags, 
+      VkImageView& imageView);
+
+void transitionImageLayout(
+    VkImage image,
+    VkFormat format,
+    VkImageLayout oldLayout,
+    VkImageLayout newLayout);
+
  private:
   void pickPhysicalDevice(
       const VkSurfaceKHR surface,
@@ -36,6 +126,10 @@ class DeviceManager {
 
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   VkDevice device;
+
+  std::optional<CommandPoolWrapper> commandPoolWrapper;
+  std::optional<CommandPoolWrapper> transientPool;
+
   VkQueue graphicsQueue;
   VkQueue presentQueue;
 };
@@ -45,7 +139,7 @@ struct QueueFamilyIndices {
   std::optional<uint32_t> presentFamily;
 
   bool isComplete() {
-      return graphicsFamily.has_value() && presentFamily.has_value();
+    return graphicsFamily.has_value() && presentFamily.has_value();
   }
 };
 

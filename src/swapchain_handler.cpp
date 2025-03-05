@@ -31,6 +31,7 @@ SwapChainHandler::SwapChainHandler(const DeviceManager& devManager, const Window
   createSwapChain(devManager.getPhysicalDevice(), window);
   createImageViews();
   createRenderPass();
+  createFramebuffers();
 }
 
 SwapChainHandler::~SwapChainHandler() {
@@ -133,6 +134,7 @@ void SwapChainHandler::createSwapChain(const VkPhysicalDevice physicalDevice, co
     throw std::runtime_error("failed to create swap chain!");
 
   vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+  scImageCount = imageCount;
   swapchainImages.resize(imageCount);
   vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages.data());
 }

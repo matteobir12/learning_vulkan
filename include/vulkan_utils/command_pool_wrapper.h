@@ -20,6 +20,7 @@ class CommandPoolWrapper {
       throw std::runtime_error("Failed to create command pool!");
   }
 
+  CommandPoolWrapper(CommandPoolWrapper&) = delete;
   ~CommandPoolWrapper() {
     if (commandPool != VK_NULL_HANDLE)
       vkDestroyCommandPool(device, commandPool, nullptr);
